@@ -1,35 +1,9 @@
-"""
-Warehouse Delivery Robot - Search Algorithms
-Intelligent Systems, Alexandria University - Task 1
-
-HOW TO RUN
-----------
-    python search_robot.py
-
-  1. Runs all three algorithms (BFS, DFS, Greedy Best-First) on the map
-     stored in GRID and prints, for each one: the algorithm name, the path as a
-     list of (row, col), the total path cost, the number of nodes expanded,
-     and the map with the path drawn on it using '*'.
-  2. Prints a results table for MAP_A, MAP_B and MAP_C (path length, path cost,
-     nodes expanded, max frontier size, run time).
-
-HOW TO CHANGE THE MAP
----------------------
-  Edit the line   GRID = MAP_A   below (e.g. GRID = MAP_B), or add your own map
-  as a list of strings, one string per row, using:
-      S = start   G = goal   . = normal floor (cost 1)
-      ~ = rough floor (cost 3)   # = wall (cannot enter)
-
-No path-finding libraries are used; only the Python standard library.
-"""
 
 import heapq
 import time
 from collections import deque
-
-# ----------------------------------------------------------------------------
 # Maps (one string per row)
-# ----------------------------------------------------------------------------
+
 MAP_A = [
     "S..#....",
     "##.#.##.",
@@ -54,21 +28,14 @@ MAP_C = [
     "....#..G",
 ]
 
-# >>> Change this line to run on a different map <<<
 GRID = MAP_A
 
-# Cost of ENTERING a cell. S is never paid for at the start; if a path ever
-# re-entered S it would cost the same as normal floor.
 CELL_COST = {".": 1, "S": 1, "G": 1, "~": 3}
 WALL = "#"
 
-# Movement: Up, Down, Left, Right (one cell at a time)
 MOVES = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-
-# ----------------------------------------------------------------------------
 # Problem helpers
-# ----------------------------------------------------------------------------
 def find_start_goal(grid):
     """Scan the grid and return the (row, col) of S and G."""
     start = goal = None
@@ -123,15 +90,13 @@ def result(name, path, grid, expanded, max_frontier):
         "max_frontier": max_frontier,
     }
 
-
-# ----------------------------------------------------------------------------
 # Uninformed search
-# ----------------------------------------------------------------------------
+
 def bfs(grid):
     """Breadth-First Search: fewest MOVES, ignores cell costs."""
     start, goal = find_start_goal(grid)
     frontier = deque([start])
-    parent = {start: None}          # also acts as the visited set
+    parent = {start: None}          
     expanded, max_frontier = 0, 1
 
     while frontier:
@@ -152,31 +117,30 @@ def dfs(grid):
     backtracking. Ignores cell costs; the path found is not guaranteed to be
     the shortest or the cheapest."""
     start, goal = find_start_goal(grid)
-    frontier = [start]              # stack (LIFO): last pushed = first explored
+    frontier = [start]             
     parent = {start: None}
-    visited = set()                 # cells already expanded
+    visited = set()               
     expanded, max_frontier = 0, 1
 
     while frontier:
         cell = frontier.pop()
-        if cell in visited:         # same cell may be pushed more than once
+        if cell in visited:        
             continue
         visited.add(cell)
         expanded += 1
         if cell == goal:
             return result("DFS", reconstruct(parent, goal), grid, expanded, max_frontier)
-        # Push in reverse so moves are explored in MOVES order (Up, Down, Left, Right)
+        
         for nxt, _ in reversed(list(neighbors(grid, cell))):
             if nxt not in visited:
-                parent[nxt] = cell  # latest discovery wins (the deeper branch)
+                parent[nxt] = cell  
                 frontier.append(nxt)
         max_frontier = max(max_frontier, len(frontier))
     return result("DFS", None, grid, expanded, max_frontier)
 
 
-# ----------------------------------------------------------------------------
 # Informed search
-# ----------------------------------------------------------------------------
+
 def greedy(grid):
     """Greedy Best-First: expands the node with smallest h(n) only."""
     start, goal = find_start_goal(grid)
@@ -206,9 +170,7 @@ def greedy(grid):
 ALGORITHMS = [bfs, dfs, greedy]
 
 
-# ----------------------------------------------------------------------------
 # Output
-# ----------------------------------------------------------------------------
 def draw_path(grid, path):
     """Return the map as text with path cells (except S and G) marked '*'."""
     rows = [list(row) for row in grid]
@@ -257,10 +219,10 @@ def results_table():
 
 
 if __name__ == "__main__":
-    print("=" * 60)
+    print("=" * 40)
     print("Map in GRID:")
     print("\n".join(GRID))
-    print("=" * 60)
+    print("=" * 40)
     for algo in ALGORITHMS:
         print_result(algo(GRID), GRID)
 
