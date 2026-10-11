@@ -1,8 +1,7 @@
 """
-Optional helper: draws each map with the path found by each algorithm and
-saves PNG images (for the report). Requires matplotlib:  pip install matplotlib
+draws each map with the path found by each algorithm and
+saves PNG images 
 
-    python make_screenshots.py
 """
 import matplotlib
 matplotlib.use("Agg")
