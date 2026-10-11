@@ -147,33 +147,31 @@ def bfs(grid):
     return result("BFS", None, grid, expanded, max_frontier)
 
 
-def ucs(grid):
-    """Uniform-Cost Search: always expands the cheapest g(n); optimal cost."""
+def dfs(grid):
+    """Depth-First Search: follows one branch as deep as possible before
+    backtracking. Ignores cell costs; the path found is not guaranteed to be
+    the shortest or the cheapest."""
     start, goal = find_start_goal(grid)
-    tie = 0                                   # tie-breaker for equal priorities
-    frontier = [(0, tie, start)]
-    g = {start: 0}
+    frontier = [start]              # stack (LIFO): last pushed = first explored
     parent = {start: None}
-    closed = set()
+    visited = set()                 # cells already expanded
     expanded, max_frontier = 0, 1
 
     while frontier:
-        cost, _, cell = heapq.heappop(frontier)
-        if cell in closed:                    # stale entry, already expanded
+        cell = frontier.pop()
+        if cell in visited:         # same cell may be pushed more than once
             continue
-        closed.add(cell)
+        visited.add(cell)
         expanded += 1
-        if cell == goal:                      # goal test on expansion -> optimal
-            return result("UCS", reconstruct(parent, goal), grid, expanded, max_frontier)
-        for nxt, step in neighbors(grid, cell):
-            new_g = cost + step
-            if nxt not in closed and new_g < g.get(nxt, float("inf")):
-                g[nxt] = new_g
-                parent[nxt] = cell
-                tie += 1
-                heapq.heappush(frontier, (new_g, tie, nxt))
+        if cell == goal:
+            return result("DFS", reconstruct(parent, goal), grid, expanded, max_frontier)
+        # Push in reverse so moves are explored in MOVES order (Up, Down, Left, Right)
+        for nxt, _ in reversed(list(neighbors(grid, cell))):
+            if nxt not in visited:
+                parent[nxt] = cell  # latest discovery wins (the deeper branch)
+                frontier.append(nxt)
         max_frontier = max(max_frontier, len(frontier))
-    return result("UCS", None, grid, expanded, max_frontier)
+    return result("DFS", None, grid, expanded, max_frontier)
 
 
 # ----------------------------------------------------------------------------
@@ -205,36 +203,7 @@ def greedy(grid):
     return result("Greedy Best-First", None, grid, expanded, max_frontier)
 
 
-def astar(grid):
-    """A*: expands the node with smallest f(n) = g(n) + h(n); optimal cost."""
-    start, goal = find_start_goal(grid)
-    tie = 0
-    frontier = [(manhattan(start, goal), 0, tie, start)]   # (f, g, tie, cell)
-    g = {start: 0}
-    parent = {start: None}
-    closed = set()
-    expanded, max_frontier = 0, 1
-
-    while frontier:
-        _, cost, _, cell = heapq.heappop(frontier)
-        if cell in closed:
-            continue
-        closed.add(cell)
-        expanded += 1
-        if cell == goal:
-            return result("A*", reconstruct(parent, goal), grid, expanded, max_frontier)
-        for nxt, step in neighbors(grid, cell):
-            new_g = cost + step
-            if nxt not in closed and new_g < g.get(nxt, float("inf")):
-                g[nxt] = new_g
-                parent[nxt] = cell
-                tie += 1
-                heapq.heappush(frontier, (new_g + manhattan(nxt, goal), new_g, tie, nxt))
-        max_frontier = max(max_frontier, len(frontier))
-    return result("A*", None, grid, expanded, max_frontier)
-
-
-ALGORITHMS = [bfs, ucs, greedy, astar]
+ALGORITHMS = [bfs, dfs, greedy]
 
 
 # ----------------------------------------------------------------------------
